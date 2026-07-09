@@ -1,58 +1,283 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Event Management REST API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A RESTful API built with Laravel for managing events and event attendees.
 
-## About Laravel
+The project demonstrates backend development concepts including REST API design, authentication, authorization, API resources, queues, notifications, scheduled tasks, and rate limiting.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Event CRUD operations
+- Event attendee management
+- Nested API resources
+- Scoped route model binding
+- Pagination
+- API Resources for consistent JSON responses
+- Conditional relationship loading using query parameters
+- Reusable relationship loading Trait
+- Authentication using Laravel Sanctum
+- Token-based API authentication
+- Authorization using Gates
+- Model authorization using Policies
+- Custom Artisan commands
+- Event reminder notifications
+- Email sending
+- Queued notifications
+- Task scheduling
+- API throttling and rate limiting
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Tech Stack
 
-## Learning Laravel
+- PHP
+- Laravel
+- MySQL
+- Laravel Sanctum
+- Laravel Queues
+- Laravel Notifications
+- Mailpit
+- Postman
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## API Endpoints
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Authentication
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+| Method | Endpoint | Description | Authentication |
+|---|---|---|---|
+| POST | `/api/login` | Login and receive an API token | Public |
+| POST | `/api/logout` | Logout and revoke the token | Required |
+| GET | `/api/user` | Get the authenticated user | Required |
 
-## Agentic Development
+### Events
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+| Method | Endpoint | Description | Authentication |
+|---|---|---|---|
+| GET | `/api/events` | Get paginated events | Public |
+| GET | `/api/events/{event}` | Get a specific event | Public |
+| POST | `/api/events` | Create an event | Required |
+| PUT/PATCH | `/api/events/{event}` | Update an event | Required |
+| DELETE | `/api/events/{event}` | Delete an event | Required |
 
-```bash
-composer require laravel/boost --dev
+### Attendees
 
-php artisan boost:install
+| Method | Endpoint | Description | Authentication |
+|---|---|---|---|
+| GET | `/api/events/{event}/attendees` | Get event attendees | Public |
+| GET | `/api/events/{event}/attendees/{attendee}` | Get a specific attendee | Public |
+| POST | `/api/events/{event}/attendees` | Attend an event | Required |
+| DELETE | `/api/events/{event}/attendees/{attendee}` | Remove an attendee | Required |
+
+## Authentication
+
+The API uses Laravel Sanctum for token-based authentication.
+
+After a successful login, the API returns a token:
+
+```json
+{
+    "token": "your-api-token"
+}
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Send the token with protected requests:
 
-## Contributing
+```text
+Authorization: Bearer YOUR_TOKEN
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Authorization
 
-## Code of Conduct
+The project uses Laravel Gates and Policies to control access to protected actions.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Examples include:
 
-## Security Vulnerabilities
+- Only authorized users can update events.
+- Only authorized users can delete events.
+- Event owners and authorized attendees can perform attendee-related actions.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Conditional Relationship Loading
+
+Relationships can be included dynamically using the `include` query parameter.
+
+Example:
+
+```text
+GET /api/events?include=user
+```
+
+Multiple relationships:
+
+```text
+GET /api/events?include=user,attendees,attendees.user
+```
+
+This functionality is handled by a reusable relationship-loading Trait.
+
+## Event Reminders
+
+The project includes a custom Artisan command that finds upcoming events and sends reminder notifications to attendees.
+
+Run the command manually:
+
+```bash
+php artisan app:send-event-reminders
+```
+
+## Notifications and Email
+
+Event reminders are sent using Laravel Notifications.
+
+During local development, Mailpit can be used as a local SMTP server.
+
+Example local mail configuration:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+```
+
+Mailpit web interface:
+
+```text
+http://localhost:8025
+```
+
+## Queues
+
+Notifications are processed asynchronously using Laravel Queues.
+
+Start the queue worker:
+
+```bash
+php artisan queue:work
+```
+
+If failed jobs need to be retried:
+
+```bash
+php artisan queue:retry all
+```
+
+## Rate Limiting
+
+Protected API operations and authentication endpoints use Laravel throttling middleware to limit repeated requests.
+
+Example:
+
+```text
+5 requests per minute
+```
+
+Requests exceeding the configured limit receive:
+
+```text
+429 Too Many Requests
+```
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone YOUR_REPOSITORY_URL
+cd event-management
+```
+
+Install PHP dependencies:
+
+```bash
+composer install
+```
+
+Create the environment file:
+
+```bash
+copy .env.example .env
+```
+
+Generate the application key:
+
+```bash
+php artisan key:generate
+```
+
+Configure your database in `.env`:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=events-management
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Run migrations and seed the database:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Start the development server:
+
+```bash
+php artisan serve
+```
+
+Start the queue worker in another terminal:
+
+```bash
+php artisan queue:work
+```
+
+## Project Structure
+
+Important parts of the project:
+
+```text
+app/
+├── Console/Commands
+├── Http/
+│   ├── Controllers/Api
+│   ├── Resources
+│   └── Traits
+├── Models
+├── Notifications
+└── Policies
+
+database/
+├── factories
+├── migrations
+└── seeders
+
+routes/
+├── api.php
+└── console.php
+```
+
+## Concepts Demonstrated
+
+This project demonstrates:
+
+- RESTful API design
+- Resource controllers
+- Nested resources
+- Route model binding
+- Eloquent relationships
+- Database factories and seeders
+- API Resources
+- Pagination
+- Authentication
+- Authorization
+- Custom Artisan commands
+- Task scheduling
+- Notifications
+- Email delivery
+- Background queues
+- API throttling
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-source and available under the MIT License.
