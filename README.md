@@ -181,7 +181,7 @@ Requests exceeding the configured limit receive:
 Clone the repository:
 
 ```bash
-git clone YOUR_REPOSITORY_URL
+git clone https://github.com/Amjad-Alkahlout/event-management
 cd event-management
 ```
 
